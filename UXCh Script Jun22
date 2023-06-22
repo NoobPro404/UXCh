@@ -1,0 +1,344 @@
+function generate_challanger_id(){
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Challengers');
+  var i,challanger_id;
+  var ids = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+  for(i=ids;i<=ss.getLastRow();i++)
+  {
+    if(ss.getRange(i,2).getValue()=="" && ss.getRange(i,4).getValue() != "")
+    {
+      challanger_id = i + 2360;
+      ss.getRange(i,2).setValue(challanger_id);
+      Utilities.sleep(2000);
+      zeroth_mail(ss.getRange(i,4).getValue(),challanger_id,ss.getRange(i,5).getValue());
+    }
+  }
+}
+
+function zeroth_mail(name,challanger_id,email_id){
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+  var mail_body = ms.getRange(9,2).getValue().toString().replace("{{Name}}",name).replace("{{Challenger ID}}",challanger_id);
+  Logger.log(mail_body);
+  var mail_subject = ms.getRange(8,2).getValue();
+  MailApp.sendEmail(email_id,mail_subject,mail_body);
+}
+
+function send_welcome_mail() {
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Challengers');
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+
+  var i;
+  var ids = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+  Logger.log(ids);
+
+  for(i=2;i<=ids;i++)
+  {
+    if(ss.getRange(i,2).getValue() != "" && ss.getRange(i,43).getValue()=="" && ss.getRange(i,42).getValue() == true)
+    {
+      var email_id = ss.getRange(i,5).getValue();
+      var name = ss.getRange(i,4).getValue();
+      var challanger_id = ss.getRange(i,2).getValue();
+      //var mail_body = "Dear "+name+",\n\n"+"Thanks for your interest in participating the UX challenge program (beta 2.0).\n\nYour Challenger ID: "+challanger_id+"\n\nIf you’re ready, request a Challenge from this link-\nhttps://cutt.ly/gettask\n\n*This beta program may have many errors and inconsistencies. Please contact us if you have any questions or concerns by replying to this email.\n\nRegards,\nUXBD Team";
+      var mail_body = ms.getRange(5,2).getValue().toString().replace("{{Name}}",name).replace("{{Challenger ID}}",challanger_id);
+      //var mail_subject = "Welcome Challanger to UXBD Challange (beta 2.0)";
+      var mail_subject = ms.getRange(4,2).getValue();
+      MailApp.sendEmail(email_id,mail_subject,mail_body);
+      ss.getRange(i,43).setValue("Mail Sent on "+Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy' 'HH:mm:ss"));
+    }
+  }
+}
+
+function generate_available_task(){
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Task Request');
+  var ts = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=418177449').getSheetByName('Challenge Tasks');
+  var i,j,k,tasks=[];
+  var idf = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+  var ids = ss.getRange("H2:H").getValues().filter(String).length + 1;
+  var ts_idf = ts.getRange("B2:B").getValues().filter(String).length + 1;
+  Logger.log(ids+" "+idf);
+
+  for(i=ids;i<=idf;i++)
+  {
+    if(ss.getRange(i,8).getValue()=="")
+    {
+      var task_cat = ss.getRange(i,3).getValue();
+      var task_type = ss.getRange(i,4).getValue();
+      
+      Logger.log(task_type);
+      Logger.log(ts_idf);
+      k=0;
+      for(j=2;j<=ts_idf;j++)
+      {
+        if(ts.getRange(j,4).getValue() == task_cat && ts.getRange(j,5).getValue()==task_type)
+        {
+          tasks[k] = ts.getRange(j,1).getValue() + " - " +ts.getRange(j,2).getValue();
+          //tasks_name[k] = ts.getRange(j,2).getValue();
+          k=k+1;
+        }
+      }
+      Logger.log(tasks);
+      ss.getRange(i,8).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(tasks).build());
+      tasks = [];
+
+    }
+  }
+}
+
+function second_mail_to_challanger()
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=372314176').getSheetByName('Task Request');
+  var cs = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=372314176').getSheetByName('Challengers');
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+
+  var ss_idf = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+  var cs_idf = cs.getRange("B2:B").getValues().filter(Number).length + 1;
+  var i,j;
+
+  for(i=2;i<=ss_idf;i++)
+  {
+    if(ss.getRange(i,9).getValue() == true)
+    {
+      var challanger_id = ss.getRange(i,2).getValue();
+      for(j=2;j<=cs_idf;j++)
+      {
+        if(challanger_id == cs.getRange(j,2).getValue())
+        {
+          ss.getRange(i,11).setValue(cs.getRange(j,5).getValue());
+          ss.getRange(i,12).setValue(cs.getRange(j,4).getValue());
+          break;
+        }
+      }
+    }
+    if(ss.getRange(i,8).getValue() != "" && ss.getRange(i,10).getValue() == "" && ss.getRange(i,9).getValue() == true)
+    {
+      var selected_task = ss.getRange(i,8).getValue().toString();
+      var ind = selected_task.indexOf(" - ");
+      var task_id = selected_task.substring(0,ind);
+      var task_title = selected_task.substring(ind+3,selected_task.length);
+      ss.getRange(i,13).setValue(task_id);
+      ss.getRange(i,14).setValue(task_title);
+      var vl_task_allot_time = '=VLOOKUP(M' + i + ",'Challenge Tasks'!$A$2"  + ':$C,3,0) + A' + i;
+      var vl_challange_link = '=VLOOKUP(M' + i + ",'Challenge Tasks'!$A$2"  + ':$F,6,0)';
+      ss.getRange(i,15).setValue(vl_task_allot_time);
+      ss.getRange(i,16).setValue(vl_challange_link);
+
+      var email_id = ss.getRange(i,11).getValue();
+      var name = ss.getRange(i,12).getValue();
+
+      var mail_subject = ms.getRange(4,3).getValue();
+      var mail_body = ms.getRange(5,3).getValue().toString().replace("{{Name}}",name).replace("{{Task ID}}",task_id).replace("{{Challenge Title}}",task_title).replace("{{Link}}",ss.getRange(i,16).getValue()).replace("{{Time Allocation (Days)}}",ss.getRange(i,15).getValue()).replace("{{Challenger ID}}",challanger_id);
+
+      MailApp.sendEmail(email_id,mail_subject,mail_body);
+      ss.getRange(i,10).setValue("Mail Sent to "+challanger_id+" for task "+task_id);
+
+
+    }
+  }
+}
+
+function generate_task_review_id(){
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Task Submission');
+  var i,task_review_id;
+  var ids = ss.getRange("E2:E").getValues().filter(String).length + 1;
+  var idf = ss.getRange("F2:F").getValues().filter(Number).length + 1;
+  Logger.log(ids + " " + idf);
+  for(i=ids;i<=idf;i++)
+  {
+    if(ss.getRange(i,5).getValue()=="" && ss.getRange(i,1).getValue() != "")
+    {
+      task_review_id = "TR" + (i+20);
+      Logger.log(task_review_id);
+      ss.getRange(i,5).setValue(task_review_id);
+      third_mail_to_challanger(ss.getRange(i,6).getValue(),i);
+      
+    }
+  }
+}
+
+function third_mail_to_challanger(challanger_id,i)
+{
+  
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=1361991091').getSheetByName('Task Submission');
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+
+  var [name,email_id] = get_info_from_challanger_id(challanger_id);
+  var mail_subject = ms.getRange(4,4).getValue();
+  var mail_body = ms.getRange(5,4).getValue().toString().replace("{{Name}}",name).replace("{{Challenger ID}}",challanger_id);
+  Logger.log(mail_body);
+  Logger.log(email_id);
+
+  MailApp.sendEmail(email_id,mail_subject,mail_body);
+  ss.getRange(i,15).setValue("Submission Confirmation Mail sent to "+challanger_id);
+
+
+}
+
+function get_info_from_challanger_id(challanger_id)
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=1361991091').getSheetByName('Challengers');
+  var ids = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+  for(i=2;i<=ids;i++)
+  {
+    if(ss.getRange(i,2).getValue() == challanger_id)
+    {
+      var name = ss.getRange(i,4).getValue();
+      var email_id = ss.getRange(i,5).getValue();
+      break;
+    }
+  }
+  return [name,email_id];
+}
+
+function generate_reviewer_id()
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Reviewers');
+  var i,reviewer_id;
+  var ids = ss.getRange("B2:B").getValues().filter(String).length + 1;
+  var idf = ss.getRange("C2:C").getValues().filter(String).length + 1;
+  Logger.log(ids + " " + idf);
+  for(i=ids;i<=idf;i++)
+  {
+    if(ss.getRange(i,2).getValue()=="" && ss.getRange(i,3).getValue() != "")
+    {
+      reviewer_id = "R" + (i+10);
+      Logger.log(reviewer_id);
+      ss.getRange(i,2).setValue(reviewer_id);
+      
+    }
+  }
+}
+
+function fourth_mail_to_reviewer()
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Task Submission');
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+
+  var i,idf;
+  idf = ss.getRange("E2:E").getValues().filter(String).length + 1;
+
+  for(i=2;i<=idf;i++)
+  {
+    Logger.log(i);
+    if(ss.getRange(i,4).getValue() == true && ss.getRange(i,5).getValue() != "" && ss.getRange(i,3).getValue() != "" && ss.getRange(i,16).getValue() == "")
+    {
+      Logger.log("Dhukse");
+      var reviewer_name = ss.getRange(i,3).getValue();
+      var [reviewer_id, reviewer_email] = get_reviewer_id(reviewer_name);
+      var task_review_id = ss.getRange(i,5).getValue();
+      var allocated_date = 7;
+      var current_date = new Date();
+      current_date.setDate(current_date.getDate()+allocated_date);
+      var new_date = Utilities.formatDate(current_date,"GMT +6", "dd MMM, yyyy");
+      var submission_link = ss.getRange(i,8).getValue();
+      [challange_title, challange_link] = get_challange_info(ss.getRange(i,7).getValue());
+      var [submitter_exp, submitter_job] = get_submitter_info(ss.getRange(i,6).getValue());
+      var mail_subject = ms.getRange(4,5).getValue();
+      var mail_body = ms.getRange(5,5).getValue().toString().replace("{{Name}}",reviewer_name).replace("{{Task Review ID}}",task_review_id).replace("{{Reviewer ID}}",reviewer_id).replace("[Today's Date + {{Allocated Time}}]",new_date).replace("{{Submission Link}}",submission_link).replace("{{Challenge Title}}",challange_title).replace("{{Link}}",challange_link).replace("{{Years of professional experience}}",submitter_exp).replace("{{Job Title}}",submitter_job);
+      MailApp.sendEmail(reviewer_email,mail_subject,mail_body);
+      ss.getRange(i,16).setValue("Mail Sent to Reviewer "+reviewer_id+" for "+task_review_id);
+    }
+  }
+}
+
+function get_reviewer_id(reviewer_name)
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Reviewers');
+
+  var idf = ss.getRange("B2:B").getValues().filter(String).length + 1;
+  var i,reviewer_id, reviewer_email;
+  for(i=2;i<=idf;i++)
+  {
+    if(ss.getRange(i,3).getValue() == reviewer_name)
+    {
+      reviewer_id = ss.getRange(i,2).getValue();
+      reviewer_email = ss.getRange(i,4).getValue();
+      break;
+    }
+  }
+  return [reviewer_id, reviewer_email];
+}
+
+function get_challange_info(task_id)
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Challenge Tasks');
+  var i, idf;
+  idf = ss.getRange("A2:A").getValues().filter(String).length + 1;
+
+  for(i=2;i<=idf;i++)
+  {
+    if(ss.getRange(i,1).getValue() == task_id)
+    {
+      var challange_title = ss.getRange(i,2).getValue();
+      var challange_link = ss.getRange(i,6).getValue();
+      break;
+    }
+  }
+  return [challange_title,challange_link];
+}
+
+function get_submitter_info(challanger_id)
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Challengers');
+  var i, idf;
+  idf = ss.getRange("B2:B").getValues().filter(Number).length + 1;
+
+  for(i=2;i<=idf;i++)
+  {
+    if(ss.getRange(i,2).getValue() == challanger_id)
+    {
+      var submitter_exp = ss.getRange(i,9).getValue();
+      var submitter_job = ss.getRange(i,10).getValue();
+      break;
+    }
+  }
+  return [submitter_exp,submitter_job];
+}
+
+function fifth_mail_to_challanger()
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Review Submission');
+  var ms = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Email');
+
+  var i,idf;
+
+  idf = ss.getRange("B2:B").getValues().filter(String).length + 1;
+
+
+  for(i=2;i<=idf;i++)
+  {
+    
+    if(ss.getRange(i,2).getValue() != "" && ss.getRange(i,7).getValue() == true && ss.getRange(i,8).getValue() == "")
+    {
+      
+      var [name, email_id, task_id, challanger_id] = get_challanger_name_from_tr_id(ss.getRange(i,2).getValue());
+      var [challange_title,challange_link] = get_challange_info(task_id);
+      var reviewer_feedback = ss.getRange(i,3).getValue();
+      var mail_subject = ms.getRange(4,6).getValue();
+      var mail_body = ms.getRange(5,6).getValue().toString().replace("{{Name}}",name).replace("{{Task ID}}",task_id).replace("{{Challenge Link}}",challange_link).replace("{{Challenger ID}}",challanger_id).replace("{{Feedback}}",reviewer_feedback);
+      MailApp.sendEmail(email_id,mail_subject,mail_body);
+      ss.getRange(i,8).setValue("Mail sent to " + challanger_id + " for feedback of " + ss.getRange(i,2).getValue());
+    }
+  }
+}
+
+function get_challanger_name_from_tr_id(task_review_id)
+{
+  var ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/19wZl5XkkKlT8MGgVk5ID7rlzeEhs-7mNjIUJO4WCCC8/edit#gid=365587588').getSheetByName('Task Submission');
+  
+  var i,idf;
+  idf = ss.getRange("E2:E").getValues().filter(String).length + 1;
+
+  for(i=2;i<=idf;i++)
+  {
+    if(ss.getRange(i,5).getValue() == task_review_id)
+    {
+      var challanger_id = ss.getRange(i,6).getValue();
+      var task_id = ss.getRange(i,7).getValue();
+      var [name,email_id] = get_info_from_challanger_id(challanger_id);
+      break;
+    }
+  }
+  return [name,email_id, task_id, challanger_id];
+}
+
+
+
